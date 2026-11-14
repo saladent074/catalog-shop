@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+<!-- End Google Tag Manager -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAIRWAY LAB | 골프 용품 카탈로그</title>
+<meta name="description" content="FAIRWAY LAB 가상 골프 용품 카탈로그 (GA4/GTM 실습용 데모 사이트)">
+<style>
+  :root{
+    --ink:#14261c; --ink2:#4b5d52; --line:#dfe6e1; --bg:#f6f8f5; --card:#fff;
+    --green:#1f6b45; --green2:#2f8a5c; --lime:#c9e86b; --sand:#efe7d6; --red:#c2412d;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  button{font:inherit;cursor:pointer}
+  a{color:inherit}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+
+  /* demo notice */
+  .notice{background:var(--ink);color:#d9e4dc;font-size:12.5px;text-align:center;padding:7px 12px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:20;background:rgba(246,248,245,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{font-weight:800;letter-spacing:.12em;font-size:18px;display:flex;align-items:center;gap:8px}
+  .logo i{width:22px;height:22px;border-radius:50%;background:var(--green);display:inline-block;position:relative}
+  .logo i:after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--lime);right:3px;top:4px}
+  .cart-btn{display:flex;align-items:center;gap:8px;background:var(--green);color:#fff;border:0;border-radius:999px;padding:9px 16px;font-weight:600}
+  .cart-btn b{background:var(--lime);color:var(--ink);border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px}
+
+  /* hero */
+  .hero{padding:56px 0 40px;display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+  .eyebrow{font-size:13px;font-weight:700;color:var(--green2);letter-spacing:.08em}
+  .hero h1{font-size:42px;line-height:1.2;margin:10px 0 14px;letter-spacing:-.02em}
+  .hero p{color:var(--ink2);font-size:16.5px;max-width:520px}
+  .hero-cta{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap}
+  .btn{border-radius:999px;padding:12px 22px;font-weight:700;border:1px solid transparent}
+  .btn-primary{background:var(--green);color:#fff}
+  .btn-primary:hover{background:var(--green2)}
+  .btn-ghost{background:transparent;border-color:var(--ink);color:var(--ink)}
+  .hero-art{aspect-ratio:1/1;border-radius:28px;background:radial-gradient(circle at 30% 30%,#e9f5d0,#bfe08b 45%,#5fa76c 80%);position:relative;overflow:hidden}
+  .hero-art svg{position:absolute;inset:0;width:100%;height:100%}
+
+  /* toolbar */
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 18px;flex-wrap:wrap}
+  .toolbar h2{font-size:24px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-size:14px;color:var(--ink2)}
+  .chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+  /* grid */
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;padding-bottom:56px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(20,38,28,.08)}
+  .thumb{aspect-ratio:4/3;display:grid;place-items:center;border:0;width:100%}
+  .thumb svg{width:58%;height:auto}
+  .badge{position:absolute;top:10px;left:10px;background:var(--red);color:#fff;font-size:11.5px;font-weight:700;border-radius:6px;padding:3px 7px}
+  .card .tw{position:relative}
+  .info{padding:14px 14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .cat{font-size:12px;color:var(--green2);font-weight:700}
+  .name{font-weight:700;font-size:15.5px;line-height:1.35;background:none;border:0;text-align:left;color:var(--ink);padding:0}
+  .name:hover{text-decoration:underline}
+  .price{font-weight:800;font-size:17px}
+  .price s{color:#9aa7a0;font-weight:500;font-size:13px;margin-left:6px}
+  .add{margin-top:auto;background:var(--sand);border:0;border-radius:10px;padding:10px;font-weight:700;color:var(--ink)}
+  .add:hover{background:var(--lime)}
+
+  /* newsletter */
+  .news{background:var(--green);color:#fff;border-radius:22px;padding:36px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;margin-bottom:56px}
+  .news h3{font-size:24px;margin-bottom:6px}
+  .news p{color:#cfe5d6}
+  .news form{display:flex;gap:8px}
+  .news input{flex:1;border:0;border-radius:999px;padding:12px 16px;font:inherit}
+  .news button{background:var(--lime);color:var(--ink);border:0;border-radius:999px;padding:12px 20px;font-weight:800}
+  footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--ink2);font-size:13px}
+
+  /* modal & drawer */
+  .dim{position:fixed;inset:0;background:rgba(10,20,14,.45);display:none;z-index:40}
+  .dim.show{display:block}
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,92vw);background:#fff;border-radius:20px;display:none;z-index:50;overflow:hidden}
+  .modal.show{display:grid;grid-template-columns:1fr 1fr}
+  .modal .thumb{aspect-ratio:auto;height:100%}
+  .m-body{padding:28px;display:flex;flex-direction:column;gap:10px}
+  .m-body h3{font-size:22px}
+  .m-body p{color:var(--ink2);font-size:14.5px}
+  .x{position:absolute;right:14px;top:12px;background:#fff;border:1px solid var(--line);border-radius:50%;width:34px;height:34px}
+  .drawer{position:fixed;right:0;top:0;bottom:0;width:min(380px,92vw);background:#fff;z-index:50;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+  .drawer.show{transform:none}
+  .d-head{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .d-list{flex:1;overflow:auto;padding:8px 20px}
+  .line{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .line button{background:none;border:0;color:var(--red);font-size:13px}
+  .d-foot{padding:18px 20px;border-top:1px solid var(--line)}
+  .total{display:flex;justify-content:space-between;font-weight:800;font-size:17px;margin-bottom:12px}
+  .empty{color:var(--ink2);padding:30px 0;text-align:center}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;z-index:60;pointer-events:none}
+  .toast.show{opacity:1}
+
+  /* debug panel (?debug=1) */
+  #dl-debug{position:fixed;left:12px;bottom:12px;width:340px;max-height:42vh;overflow:auto;background:#0f1a14;color:#b8f0c8;font:12px/1.45 Consolas,monospace;border-radius:10px;padding:10px;z-index:70;display:none}
+  #dl-debug b{color:var(--lime)}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr}.hero-art{max-width:360px}
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .news{grid-template-columns:1fr}
+    .modal.show{grid-template-columns:1fr}.modal .thumb{height:200px}
+  }
+  @media (max-width:520px){.hero h1{font-size:32px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<div class="notice">이 사이트는 GA4·GTM 실습용 <b>가상 쇼핑몰</b>입니다. 실제 판매·결제는 이루어지지 않습니다.</div>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo"><i></i>FAIRWAY LAB</div>
+    <button class="cart-btn" id="cartBtn" data-track="open_cart">장바구니 <b id="cartCount">0</b></button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">2026 FALL COLLECTION</div>
+      <h1>가볍게 치고,<br>오래 즐기는 라운드</h1>
+      <p>입문자부터 싱글 골퍼까지. FAIRWAY LAB이 고른 클럽·볼·어패럴·액세서리를 한곳에서 비교해 보세요.</p>
+      <div class="hero-cta">
+        <a href="#catalog" class="btn btn-primary" data-track="hero_cta_shop">카탈로그 보기</a>
+        <a href="#newsletter" class="btn btn-ghost" data-track="hero_cta_news">신상품 소식 받기</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <ellipse cx="200" cy="330" rx="170" ry="40" fill="#3f8a55" opacity=".55"/>
+        <line x1="250" y1="80" x2="250" y2="320" stroke="#f5f5f0" stroke-width="5"/>
+        <path d="M253 82 L330 108 L253 134 Z" fill="#d9472f"/>
+        <ellipse cx="250" cy="322" rx="22" ry="6" fill="#1c3a26"/>
+        <circle cx="140" cy="300" r="20" fill="#fff"/>
+        <circle cx="134" cy="294" r="2.2" fill="#d6d6d6"/><circle cx="144" cy="292" r="2.2" fill="#d6d6d6"/>
+        <circle cx="140" cy="302" r="2.2" fill="#d6d6d6"/><circle cx="148" cy="303" r="2.2" fill="#d6d6d6"/>
+      </svg>
+    </div>
+  </section>
+
+  <section id="catalog">
+    <div class="toolbar">
+      <h2>상품 카탈로그</h2>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="news" id="newsletter">
+    <div>
+      <h3>신상품·할인 소식 받기</h3>
+      <p>가상 사이트라 실제 메일은 발송되지 않습니다. 이벤트 수집 확인용입니다.</p>
+    </div>
+    <form id="newsForm">
+      <input type="email" id="newsEmail" placeholder="이메일 주소" required aria-label="이메일 주소">
+      <button type="submit">구독하기</button>
+    </form>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 FAIRWAY LAB (가상 브랜드) · GA4/GTM 실습 데모 페이지 · 표시된 상품과 가격은 모두 가상입니다.</div>
+</footer>
+
+<!-- product modal -->
+<div class="dim" id="dim"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true">
+  <button class="x" id="modalClose" aria-label="닫기">✕</button>
+  <div class="thumb" id="mThumb"></div>
+  <div class="m-body">
+    <div class="cat" id="mCat"></div>
+    <h3 id="mName"></h3>
+    <div class="price" id="mPrice"></div>
+    <p id="mDesc"></p>
+    <button class="btn btn-primary" id="mAdd">장바구니 담기</button>
+  </div>
+</div>
+
+<!-- cart drawer -->
+<aside class="drawer" id="drawer" aria-label="장바구니">
+  <div class="d-head"><b>장바구니</b><button class="x" style="position:static" id="drawerClose" aria-label="닫기">✕</button></div>
+  <div class="d-list" id="dList"></div>
+  <div class="d-foot">
+    <div class="total"><span>합계</span><span id="dTotal">0원</span></div>
+    <button class="btn btn-primary" style="width:100%" id="checkoutBtn">주문하기</button>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+<div id="dl-debug"><b>dataLayer 로그 (?debug=1)</b><div id="dl-log"></div></div>
+
+<script>
+/* =========================================================
+   상품 데이터 (가상)
+   ========================================================= */
+const CURRENCY = "KRW";
+const LIST = { item_list_id: "main_catalog", item_list_name: "메인 카탈로그" };
+const PRODUCTS = [
+  { id:"FL-DR01", name:"에어로 드라이버 10.5°", cat:"클럽", price:459000, was:529000, color:"#dfeee2", icon:"driver", desc:"460cc 대형 헤드와 낮은 무게중심으로 비거리와 관용성을 동시에 잡은 드라이버." },
+  { id:"FL-IR07", name:"소프트 단조 아이언 7개 세트", cat:"클럽", price:1190000, color:"#e6ecf5", icon:"iron", desc:"부드러운 타감의 단조 헤드. 5번~PW 구성." },
+  { id:"FL-PT02", name:"밸런스 말렛 퍼터", cat:"클럽", price:239000, color:"#efe7d6", icon:"putter", desc:"정렬 라인이 선명한 말렛형 퍼터로 짧은 퍼팅의 방향성 향상." },
+  { id:"FL-BL12", name:"투어 우레탄 볼 12구", cat:"볼", price:59000, was:69000, color:"#f3f6ee", icon:"ball", desc:"3피스 우레탄 커버. 그린 주변 스핀 컨트롤에 강한 투어용 볼." },
+  { id:"FL-BL24", name:"디스턴스 볼 24구", cat:"볼", price:45000, color:"#f7f3e8", icon:"ball", desc:"2피스 설계로 비거리 중심. 연습 라운드에 부담 없는 가격." },
+  { id:"FL-AP01", name:"쿨링 기능성 폴로 셔츠", cat:"어패럴", price:89000, color:"#e3f1f0", icon:"shirt", desc:"흡습·속건 원단과 UV 차단 기능으로 여름 라운드에 쾌적." },
+  { id:"FL-AP05", name:"방풍 하프집업 자켓", cat:"어패럴", price:149000, was:179000, color:"#ece6f3", icon:"jacket", desc:"가볍고 바람을 막아 주는 봄·가을 시즌용 하프집업." },
+  { id:"FL-AC03", name:"그립 강화 골프 장갑", cat:"액세서리", price:19000, color:"#fbeee4", icon:"glove", desc:"양가죽 손바닥과 신축성 메시 등판으로 밀착감 우수." },
+  { id:"FL-AC08", name:"경량 스탠드 캐디백", cat:"액세서리", price:279000, color:"#e4ecf0", icon:"bag", desc:"2.1kg 경량 스탠드백. 14분할 탑과 보온 포켓 포함." },
+  { id:"FL-AC11", name:"레이저 거리측정기", cat:"액세서리", price:329000, color:"#eaeaea", icon:"range", desc:"경사 보정과 핀 고정 진동 알림을 지원하는 거리측정기." },
+  { id:"FL-AC14", name:"티·볼마커 세트", cat:"액세서리", price:12000, color:"#f2f0e6", icon:"tee", desc:"우드 티 30개와 자석 볼마커 2개 구성." },
+  { id:"FL-SH02", name:"스파이크리스 골프화", cat:"어패럴", price:169000, color:"#f0ece4", icon:"shoe", desc:"필드와 일상 모두 신기 좋은 스파이크리스 아웃솔." },
+];
+const CATS = ["전체", ...new Set(PRODUCTS.map(p => p.cat))];
+
+/* 단순한 일러스트 아이콘 (자체 제작 SVG) */
+const ICONS = {
+  driver:'<svg viewBox="0 0 120 120"><line x1="30" y1="12" x2="70" y2="88" stroke="#33473b" stroke-width="5" stroke-linecap="round"/><ellipse cx="80" cy="96" rx="26" ry="15" fill="#1f6b45"/><ellipse cx="74" cy="92" rx="10" ry="4" fill="#c9e86b"/></svg>',
+  iron:'<svg viewBox="0 0 120 120"><line x1="40" y1="10" x2="62" y2="86" stroke="#33473b" stroke-width="5" stroke-linecap="round"/><path d="M56 82 L92 90 L88 106 L58 98 Z" fill="#8aa0b8"/></svg>',
+  putter:'<svg viewBox="0 0 120 120"><line x1="58" y1="10" x2="58" y2="84" stroke="#33473b" stroke-width="5" stroke-linecap="round"/><path d="M30 84 h56 a10 10 0 0 1 0 20 h-56 a10 10 0 0 1 0 -20z" fill="#a8916a"/><line x1="58" y1="88" x2="58" y2="100" stroke="#fff" stroke-width="2"/></svg>',
+  ball:'<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="38" fill="#fff" stroke="#cfd8d2" stroke-width="2"/><g fill="#dfe5e1"><circle cx="48" cy="48" r="4"/><circle cx="62" cy="44" r="4"/><circle cx="74" cy="54" r="4"/><circle cx="52" cy="62" r="4"/><circle cx="66" cy="66" r="4"/><circle cx="56" cy="78" r="4"/></g></svg>',
+  shirt:'<svg viewBox="0 0 120 120"><path d="M40 22 L28 30 L14 48 L28 58 L34 50 L34 100 L86 100 L86 50 L92 58 L106 48 L92 30 L80 22 L70 30 L50 30 Z" fill="#2f8a7a"/><path d="M50 30 L60 42 L70 30" fill="none" stroke="#fff" stroke-width="3"/></svg>',
+  jacket:'<svg viewBox="0 0 120 120"><path d="M40 20 L26 30 L16 96 L36 100 L38 54 L40 104 L80 104 L82 54 L84 100 L104 96 L94 30 L80 20 L60 28 Z" fill="#6b5aa0"/><line x1="60" y1="28" x2="60" y2="70" stroke="#c9e86b" stroke-width="3"/></svg>',
+  glove:'<svg viewBox="0 0 120 120"><path d="M40 104 L40 50 L36 26 a5 5 0 0 1 10 -1 L50 46 L50 18 a5 5 0 0 1 10 0 L60 46 L62 20 a5 5 0 0 1 10 1 L70 48 L76 28 a5 5 0 0 1 9 3 L80 62 L92 52 a6 6 0 0 1 8 8 L78 88 L76 104 Z" fill="#fff" stroke="#c9b8a4" stroke-width="2"/><rect x="40" y="92" width="36" height="12" fill="#1f6b45"/></svg>',
+  bag:'<svg viewBox="0 0 120 120"><rect x="40" y="26" width="40" height="80" rx="14" fill="#2c5a7a"/><rect x="44" y="12" width="6" height="20" fill="#33473b"/><rect x="56" y="8" width="6" height="24" fill="#33473b"/><rect x="68" y="14" width="6" height="18" fill="#33473b"/><rect x="40" y="60" width="40" height="8" fill="#c9e86b"/><line x1="78" y1="80" x2="98" y2="110" stroke="#33473b" stroke-width="4"/></svg>',
+  range:'<svg viewBox="0 0 120 120"><rect x="22" y="40" width="72" height="44" rx="12" fill="#3a3f3c"/><circle cx="40" cy="62" r="13" fill="#7fb3c9" stroke="#222" stroke-width="3"/><rect x="88" y="54" width="14" height="16" rx="3" fill="#3a3f3c"/><rect x="62" y="34" width="20" height="8" rx="3" fill="#d9472f"/></svg>',
+  tee:'<svg viewBox="0 0 120 120"><path d="M36 30 h20 l-6 8 v58 l-4 8 l-4 -8 v-58 z" fill="#c69a5b"/><path d="M66 36 h20 l-6 8 v52 l-4 8 l-4 -8 v-52 z" fill="#e0b97c"/><circle cx="84" cy="88" r="9" fill="#1f6b45"/></svg>',
+  shoe:'<svg viewBox="0 0 120 120"><path d="M16 78 C16 60 34 56 46 52 L62 42 C70 50 82 56 100 62 C108 66 108 80 100 84 L20 88 C16 88 16 82 16 78 Z" fill="#f4f4f0" stroke="#bfc8c2" stroke-width="2"/><rect x="16" y="84" width="88" height="8" rx="4" fill="#1f6b45"/></svg>',
+};
+
+/* =========================================================
+   dataLayer 이벤트 (GA4 전자상거래 권장 형식)
+   ========================================================= */
+window.dataLayer = window.dataLayer || [];
+const DEBUG = new URLSearchParams(location.search).get("debug") === "1";
+function track(event, params) {
+  if (params && params.ecommerce) window.dataLayer.push({ ecommerce: null }); // 이전 ecommerce 값 초기화
+  const payload = Object.assign({ event }, params || {});
+  window.dataLayer.push(payload);
+  if (DEBUG) {
+    const el = document.createElement("div");
+    el.textContent = "▶ " + JSON.stringify(payload);
+    document.getElementById("dl-log").prepend(el);
+  }
+}
+function toItem(p, extra) {
+  return Object.assign({
+    item_id: p.id, item_name: p.name, item_brand: "FAIRWAY LAB", item_category: p.cat,
+    price: p.price, quantity: 1, item_list_id: LIST.item_list_id, item_list_name: LIST.item_list_name,
+  }, extra || {});
+}
+
+/* =========================================================
+   화면 렌더링
+   ========================================================= */
+const won = n => n.toLocaleString("ko-KR") + "원";
+const $ = id => document.getElementById(id);
+let currentCat = "전체";
+let cart = []; // {id, qty}
+
+function renderChips() {
+  $("chips").innerHTML = CATS.map(c =>
+    `<button class="chip ${c === currentCat ? "on" : ""}" data-cat="${c}">${c}</button>`).join("");
+}
+function visibleProducts() {
+  return currentCat === "전체" ? PRODUCTS : PRODUCTS.filter(p => p.cat === currentCat);
+}
+function renderGrid() {
+  const list = visibleProducts();
+  $("grid").innerHTML = list.map((p, i) => `
+    <article class="card" data-id="${p.id}" data-index="${i}">
+      <div class="tw">
+        ${p.was ? `<span class="badge">${Math.round((1 - p.price / p.was) * 100)}% OFF</span>` : ""}
+        <button class="thumb" style="background:${p.color}" data-act="open" aria-label="${p.name} 상세 보기">${ICONS[p.icon]}</button>
+      </div>
+      <div class="info">
+        <span class="cat">${p.cat}</span>
+        <button class="name" data-act="open">${p.name}</button>
+        <div class="price">${won(p.price)}${p.was ? `<s>${won(p.was)}</s>` : ""}</div>
+        <button class="add" data-act="add">장바구니 담기</button>
+      </div>
+    </article>`).join("");
+  track("view_item_list", {
+    ecommerce: { item_list_id: LIST.item_list_id, item_list_name: LIST.item_list_name,
+      items: list.map((p, i) => toItem(p, { index: i })) },
+  });
+}
+
+/* 상세 모달 */
+let modalProduct = null;
+function openModal(p, index) {
+  modalProduct = p;
+  track("select_item", { ecommerce: { item_list_id: LIST.item_list_id, item_list_name: LIST.item_list_name,
+    items: [toItem(p, { index })] } });
+  $("mThumb").style.background = p.color; $("mThumb").innerHTML = ICONS[p.icon];
+  $("mCat").textContent = p.cat; $("mName").textContent = p.name;
+  $("mPrice").innerHTML = won(p.price) + (p.was ? `<s>${won(p.was)}</s>` : "");
+  $("mDesc").textContent = p.desc;
+  $("dim").classList.add("show"); $("modal").classList.add("show");
+  track("view_item", { ecommerce: { currency: CURRENCY, value: p.price, items: [toItem(p)] } });
+}
+function closeAll() {
+  $("dim").classList.remove("show"); $("modal").classList.remove("show"); $("drawer").classList.remove("show");
+}
+
+/* 장바구니 */
+function cartTotal() { return cart.reduce((s, l) => s + PRODUCTS.find(p => p.id === l.id).price * l.qty, 0); }
+function cartItems() { return cart.map(l => toItem(PRODUCTS.find(p => p.id === l.id), { quantity: l.qty })); }
+function addToCart(p) {
+  const line = cart.find(l => l.id === p.id);
+  line ? line.qty++ : cart.push({ id: p.id, qty: 1 });
+  track("add_to_cart", { ecommerce: { currency: CURRENCY, value: p.price, items: [toItem(p)] } });
+  renderCart(); toast(`'${p.name}'을(를) 담았습니다`);
+}
+function removeFromCart(id) {
+  const line = cart.find(l => l.id === id); if (!line) return;
+  const p = PRODUCTS.find(x => x.id === id);
+  cart = cart.filter(l => l.id !== id);
+  track("remove_from_cart", { ecommerce: { currency: CURRENCY, value: p.price * line.qty,
+    items: [toItem(p, { quantity: line.qty })] } });
+  renderCart();
+}
+function renderCart() {
+  $("cartCount").textContent = cart.reduce((s, l) => s + l.qty, 0);
+  $("dList").innerHTML = cart.length ? cart.map(l => {
+    const p = PRODUCTS.find(x => x.id === l.id);
+    return `<div class="line"><div><b>${p.name}</b><br>${won(p.price)} × ${l.qty}</div>
+            <button data-remove="${p.id}">삭제</button></div>`;
+  }).join("") : `<div class="empty">장바구니가 비어 있습니다.</div>`;
+  $("dTotal").textContent = won(cartTotal());
+}
+function openCart() {
+  $("dim").classList.add("show"); $("drawer").classList.add("show");
+  track("view_cart", { ecommerce: { currency: CURRENCY, value: cartTotal(), items: cartItems() } });
+}
+
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+/* =========================================================
+   이벤트 연결
+   ========================================================= */
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest("[data-cat]"); if (!b || b.dataset.cat === currentCat) return;
+  currentCat = b.dataset.cat;
+  track("filter_category", { filter_category: currentCat });
+  renderChips(); renderGrid();
+});
+$("grid").addEventListener("click", e => {
+  const btn = e.target.closest("[data-act]"); if (!btn) return;
+  const card = btn.closest(".card");
+  const p = PRODUCTS.find(x => x.id === card.dataset.id);
+  if (btn.dataset.act === "open") openModal(p, Number(card.dataset.index));
+  else addToCart(p);
+});
+$("mAdd").addEventListener("click", () => { addToCart(modalProduct); closeAll(); });
+$("modalClose").addEventListener("click", closeAll);
+$("drawerClose").addEventListener("click", closeAll);
+$("dim").addEventListener("click", closeAll);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeAll(); });
+$("cartBtn").addEventListener("click", openCart);
+$("dList").addEventListener("click", e => { const b = e.target.closest("[data-remove]"); if (b) removeFromCart(b.dataset.remove); });
+$("checkoutBtn").addEventListener("click", () => {
+  if (!cart.length) { toast("장바구니가 비어 있습니다"); return; }
+  track("begin_checkout", { ecommerce: { currency: CURRENCY, value: cartTotal(), items: cartItems() } });
+  toast("가상 쇼핑몰이라 실제 주문은 진행되지 않습니다");
+});
+$("newsForm").addEventListener("submit", e => {
+  e.preventDefault();
+  // 개인정보(이메일 주소)는 dataLayer에 넣지 않는다
+  track("sign_up", { method: "newsletter" });
+  $("newsEmail").value = ""; toast("구독 신청 완료 (데모)");
+});
+document.querySelectorAll("[data-track]").forEach(el =>
+  el.addEventListener("click", () => { if (!el.id) track("cta_click", { cta_name: el.dataset.track }); }));
+
+if (DEBUG) $("dl-debug").style.display = "block";
+renderChips(); renderGrid(); renderCart();
+</script>
+</body>
+</html>
