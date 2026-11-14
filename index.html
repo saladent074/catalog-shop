@@ -104,6 +104,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s;z-index:60;pointer-events:none}
   .toast.show{opacity:1}
 
+  /* v2: search / sort / wishlist / checkout */
+  .tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .search{display:flex;background:#fff;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .search input{border:0;padding:8px 14px;font:inherit;font-size:14px;width:180px;outline:none}
+  .search button{border:0;background:var(--ink);color:#fff;padding:0 14px;font-size:13px}
+  .sort{border:1px solid var(--line);border-radius:999px;padding:8px 12px;font:inherit;font-size:14px;background:#fff;color:var(--ink2)}
+  .wish{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:17px;color:#9aa7a0;line-height:1}
+  .wish.on{color:var(--red)}
+  .result-note{color:var(--ink2);font-size:14px;margin:-6px 0 14px}
+  .no-result{grid-column:1/-1;text-align:center;color:var(--ink2);padding:40px 0}
+  .ship{background:var(--lime);color:var(--ink);font-size:13px;font-weight:700;text-align:center;padding:6px}
+  .ship-left{font-size:13px;color:var(--green2);margin-bottom:8px}
+  .co-list{font-size:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0;margin:6px 0;max-height:180px;overflow:auto}
+  .co-list div{display:flex;justify-content:space-between;padding:4px 0}
+  .done{text-align:center;padding:10px 0}
+  .done b{font-size:20px;display:block;margin-bottom:6px}
+
   /* debug panel (?debug=1) */
   #dl-debug{position:fixed;left:12px;bottom:12px;width:340px;max-height:42vh;overflow:auto;background:#0f1a14;color:#b8f0c8;font:12px/1.45 Consolas,monospace;border-radius:10px;padding:10px;z-index:70;display:none}
   #dl-debug b{color:var(--lime)}
@@ -124,6 +141,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
 <div class="notice">이 사이트는 GA4·GTM 실습용 <b>가상 쇼핑몰</b>입니다. 실제 판매·결제는 이루어지지 않습니다.</div>
+<div class="ship">🚚 5만원 이상 무료배송 · 가을 시즌 최대 17% 할인 (가상 이벤트)</div>
 
 <header>
   <div class="wrap nav">
@@ -159,8 +177,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <section id="catalog">
     <div class="toolbar">
       <h2>상품 카탈로그</h2>
-      <div class="chips" id="chips"></div>
+      <div class="tools">
+        <form class="search" id="searchForm" role="search">
+          <input type="search" id="searchInput" placeholder="상품 검색 (예: 볼, 퍼터)" aria-label="상품 검색">
+          <button type="submit">검색</button>
+        </form>
+        <select class="sort" id="sortSel" aria-label="정렬">
+          <option value="recommend">추천순</option>
+          <option value="price_asc">낮은 가격순</option>
+          <option value="price_desc">높은 가격순</option>
+          <option value="discount">할인 상품 먼저</option>
+        </select>
+      </div>
     </div>
+    <div class="chips" id="chips" style="margin-bottom:12px"></div>
+    <p class="result-note" id="resultNote"></p>
     <div class="grid" id="grid"></div>
   </section>
 
@@ -199,10 +230,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="d-head"><b>장바구니</b><button class="x" style="position:static" id="drawerClose" aria-label="닫기">✕</button></div>
   <div class="d-list" id="dList"></div>
   <div class="d-foot">
+    <div class="ship-left" id="shipLeft"></div>
     <div class="total"><span>합계</span><span id="dTotal">0원</span></div>
     <button class="btn btn-primary" style="width:100%" id="checkoutBtn">주문하기</button>
   </div>
 </aside>
+
+<!-- checkout modal (v2) -->
+<div class="modal" id="coModal" role="dialog" aria-modal="true" style="width:min(440px,92vw)">
+  <button class="x" id="coClose" aria-label="닫기">✕</button>
+  <div class="m-body" id="coBody" style="grid-column:1/-1"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 <div id="dl-debug"><b>dataLayer 로그 (?debug=1)</b><div id="dl-log"></div></div>
@@ -271,22 +309,42 @@ function toItem(p, extra) {
    ========================================================= */
 const won = n => n.toLocaleString("ko-KR") + "원";
 const $ = id => document.getElementById(id);
+const FREE_SHIP = 50000, SHIP_FEE = 3000;
 let currentCat = "전체";
-let cart = []; // {id, qty}
+let query = "";            // v2: 검색어
+let sortKey = "recommend"; // v2: 정렬
+const wish = new Set();    // v2: 위시리스트
+let cart = loadCart();     // v2: 새로고침해도 장바구니 유지 {id, qty}
+
+function loadCart() {
+  try { return JSON.parse(localStorage.getItem("fl_cart") || "[]").filter(l => PRODUCTS.some(p => p.id === l.id)); }
+  catch (e) { return []; }
+}
+function saveCart() { try { localStorage.setItem("fl_cart", JSON.stringify(cart)); } catch (e) {} }
 
 function renderChips() {
   $("chips").innerHTML = CATS.map(c =>
     `<button class="chip ${c === currentCat ? "on" : ""}" data-cat="${c}">${c}</button>`).join("");
 }
 function visibleProducts() {
-  return currentCat === "전체" ? PRODUCTS : PRODUCTS.filter(p => p.cat === currentCat);
+  let list = currentCat === "전체" ? PRODUCTS.slice() : PRODUCTS.filter(p => p.cat === currentCat);
+  if (query) {
+    const q = query.toLowerCase();
+    list = list.filter(p => (p.name + " " + p.cat + " " + p.desc).toLowerCase().includes(q));
+  }
+  if (sortKey === "price_asc") list.sort((a, b) => a.price - b.price);
+  if (sortKey === "price_desc") list.sort((a, b) => b.price - a.price);
+  if (sortKey === "discount") list.sort((a, b) => (b.was ? 1 : 0) - (a.was ? 1 : 0));
+  return list;
 }
 function renderGrid() {
   const list = visibleProducts();
-  $("grid").innerHTML = list.map((p, i) => `
+  $("resultNote").textContent = query ? `'${query}' 검색 결과 ${list.length}개` : `${currentCat} · ${list.length}개 상품`;
+  $("grid").innerHTML = list.length ? list.map((p, i) => `
     <article class="card" data-id="${p.id}" data-index="${i}">
       <div class="tw">
         ${p.was ? `<span class="badge">${Math.round((1 - p.price / p.was) * 100)}% OFF</span>` : ""}
+        <button class="wish ${wish.has(p.id) ? "on" : ""}" data-act="wish" aria-label="${p.name} 찜하기">${wish.has(p.id) ? "♥" : "♡"}</button>
         <button class="thumb" style="background:${p.color}" data-act="open" aria-label="${p.name} 상세 보기">${ICONS[p.icon]}</button>
       </div>
       <div class="info">
@@ -295,8 +353,8 @@ function renderGrid() {
         <div class="price">${won(p.price)}${p.was ? `<s>${won(p.was)}</s>` : ""}</div>
         <button class="add" data-act="add">장바구니 담기</button>
       </div>
-    </article>`).join("");
-  track("view_item_list", {
+    </article>`).join("") : `<div class="no-result">검색 결과가 없습니다. 다른 단어로 검색해 보세요.</div>`;
+  if (list.length) track("view_item_list", {
     ecommerce: { item_list_id: LIST.item_list_id, item_list_name: LIST.item_list_name,
       items: list.map((p, i) => toItem(p, { index: i })) },
   });
@@ -316,12 +374,25 @@ function openModal(p, index) {
   track("view_item", { ecommerce: { currency: CURRENCY, value: p.price, items: [toItem(p)] } });
 }
 function closeAll() {
-  $("dim").classList.remove("show"); $("modal").classList.remove("show"); $("drawer").classList.remove("show");
+  ["dim", "modal", "drawer", "coModal"].forEach(id => $(id).classList.remove("show"));
+}
+
+/* 위시리스트 (v2) */
+function toggleWish(p, btn) {
+  if (wish.has(p.id)) { wish.delete(p.id); toast("찜을 해제했습니다"); }
+  else {
+    wish.add(p.id);
+    track("add_to_wishlist", { ecommerce: { currency: CURRENCY, value: p.price, items: [toItem(p)] } });
+    toast(`'${p.name}'을(를) 찜했습니다`);
+  }
+  // 목록 전체를 다시 그리지 않고 하트만 바꾼다 (view_item_list 중복 방지)
+  btn.classList.toggle("on", wish.has(p.id)); btn.textContent = wish.has(p.id) ? "♥" : "♡";
 }
 
 /* 장바구니 */
 function cartTotal() { return cart.reduce((s, l) => s + PRODUCTS.find(p => p.id === l.id).price * l.qty, 0); }
 function cartItems() { return cart.map(l => toItem(PRODUCTS.find(p => p.id === l.id), { quantity: l.qty })); }
+function shipping() { const t = cartTotal(); return t === 0 || t >= FREE_SHIP ? 0 : SHIP_FEE; }
 function addToCart(p) {
   const line = cart.find(l => l.id === p.id);
   line ? line.qty++ : cart.push({ id: p.id, qty: 1 });
@@ -337,17 +408,45 @@ function removeFromCart(id) {
   renderCart();
 }
 function renderCart() {
+  saveCart();
   $("cartCount").textContent = cart.reduce((s, l) => s + l.qty, 0);
   $("dList").innerHTML = cart.length ? cart.map(l => {
     const p = PRODUCTS.find(x => x.id === l.id);
     return `<div class="line"><div><b>${p.name}</b><br>${won(p.price)} × ${l.qty}</div>
             <button data-remove="${p.id}">삭제</button></div>`;
   }).join("") : `<div class="empty">장바구니가 비어 있습니다.</div>`;
-  $("dTotal").textContent = won(cartTotal());
+  const t = cartTotal();
+  $("shipLeft").textContent = !t ? "" : t >= FREE_SHIP ? "무료배송 적용!" : `${won(FREE_SHIP - t)} 더 담으면 무료배송`;
+  $("dTotal").textContent = won(t);
 }
 function openCart() {
   $("dim").classList.add("show"); $("drawer").classList.add("show");
   track("view_cart", { ecommerce: { currency: CURRENCY, value: cartTotal(), items: cartItems() } });
+}
+
+/* 주문 (v2: 가상 결제 → purchase) */
+function openCheckout() {
+  if (!cart.length) { toast("장바구니가 비어 있습니다"); return; }
+  track("begin_checkout", { ecommerce: { currency: CURRENCY, value: cartTotal(), items: cartItems() } });
+  const t = cartTotal(), ship = shipping();
+  $("coBody").innerHTML = `<h3>주문 확인</h3>
+    <div class="co-list">${cart.map(l => { const p = PRODUCTS.find(x => x.id === l.id);
+      return `<div><span>${p.name} × ${l.qty}</span><span>${won(p.price * l.qty)}</span></div>`; }).join("")}</div>
+    <div class="co-list" style="border:0;padding:0"><div><span>배송비</span><span>${ship ? won(ship) : "무료"}</span></div></div>
+    <div class="total"><span>결제 금액</span><span>${won(t + ship)}</span></div>
+    <p>가상 결제입니다. 실제 결제는 일어나지 않습니다.</p>
+    <button class="btn btn-primary" id="payBtn">가상 결제하기</button>`;
+  $("drawer").classList.remove("show"); $("dim").classList.add("show"); $("coModal").classList.add("show");
+  $("payBtn").addEventListener("click", completePurchase);
+}
+function completePurchase() {
+  const tid = "T" + Date.now();
+  track("purchase", { ecommerce: { transaction_id: tid, currency: CURRENCY, value: cartTotal(),
+    shipping: shipping(), items: cartItems() } });
+  cart = []; renderCart();
+  $("coBody").innerHTML = `<div class="done"><b>주문이 완료되었습니다 (데모)</b>
+    주문번호 ${tid}<br><br><button class="btn btn-primary" id="doneBtn">쇼핑 계속하기</button></div>`;
+  $("doneBtn").addEventListener("click", closeAll);
 }
 
 function toast(msg) {
@@ -364,25 +463,35 @@ $("chips").addEventListener("click", e => {
   track("filter_category", { filter_category: currentCat });
   renderChips(); renderGrid();
 });
+$("searchForm").addEventListener("submit", e => {
+  e.preventDefault();
+  query = $("searchInput").value.trim();
+  if (query) track("search", { search_term: query });
+  renderGrid();
+});
+$("searchInput").addEventListener("search", () => { if (!$("searchInput").value) { query = ""; renderGrid(); } });
+$("sortSel").addEventListener("change", e => {
+  sortKey = e.target.value;
+  track("sort_change", { sort_option: sortKey });
+  renderGrid();
+});
 $("grid").addEventListener("click", e => {
   const btn = e.target.closest("[data-act]"); if (!btn) return;
   const card = btn.closest(".card");
   const p = PRODUCTS.find(x => x.id === card.dataset.id);
   if (btn.dataset.act === "open") openModal(p, Number(card.dataset.index));
+  else if (btn.dataset.act === "wish") toggleWish(p, btn);
   else addToCart(p);
 });
 $("mAdd").addEventListener("click", () => { addToCart(modalProduct); closeAll(); });
 $("modalClose").addEventListener("click", closeAll);
+$("coClose").addEventListener("click", closeAll);
 $("drawerClose").addEventListener("click", closeAll);
 $("dim").addEventListener("click", closeAll);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeAll(); });
 $("cartBtn").addEventListener("click", openCart);
 $("dList").addEventListener("click", e => { const b = e.target.closest("[data-remove]"); if (b) removeFromCart(b.dataset.remove); });
-$("checkoutBtn").addEventListener("click", () => {
-  if (!cart.length) { toast("장바구니가 비어 있습니다"); return; }
-  track("begin_checkout", { ecommerce: { currency: CURRENCY, value: cartTotal(), items: cartItems() } });
-  toast("가상 쇼핑몰이라 실제 주문은 진행되지 않습니다");
-});
+$("checkoutBtn").addEventListener("click", openCheckout);
 $("newsForm").addEventListener("submit", e => {
   e.preventDefault();
   // 개인정보(이메일 주소)는 dataLayer에 넣지 않는다
